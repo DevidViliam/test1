@@ -1,0 +1,83 @@
+#Maximum Drawdown:
+def calculate_maximum_drawdown(returns):
+    cumulative_returns = [1 + r for r in returns]
+    for i in range(1, len(cumulative_returns)):
+        cumulative_returns[i] *= cumulative_returns[i - 1]
+
+    max_drawdown = 0
+    peak_value = cumulative_returns[0]
+
+    for i in range(1, len(cumulative_returns)):
+        if cumulative_returns[i] > peak_value:
+            peak_value = cumulative_returns[i]
+        else:
+            drawdown = (peak_value - cumulative_returns[i]) / peak_value
+            max_drawdown = max(max_drawdown, drawdown)
+
+    return max_drawdown
+
+#Value at Risk (VaR):
+import numpy as np
+
+def calculate_var(returns, confidence_level=0.95):
+    returns_sorted = np.sort(returns)
+    index = int((1 - confidence_level) * len(returns_sorted))
+    var = -returns_sorted[index]
+    return var
+
+#Conditional Value at Risk (CVaR):
+def calculate_cvar(returns, confidence_level=0.95):
+    returns_sorted = np.sort(returns)
+    index = int((1 - confidence_level) * len(returns_sorted))
+    cvar = -np.mean(returns_sorted[:index])
+    return cvar
+
+#Portfolio Correlation:
+import pandas as pd
+
+def calculate_portfolio_correlation(asset_returns):
+    correlation_matrix = asset_returns.corr()
+    return correlation_matrix
+
+
+
+
+
+
+#Stop-loss orders:
+def place_fixed_percentage_stop_loss(entry_price, percentage):
+    stop_loss_price = entry_price * (1 - percentage)
+    return stop_loss_price
+
+def update_trailing_stop_loss(highest_price_since_entry, trailing_stop_distance):
+    stop_loss_price = highest_price_since_entry - trailing_stop_distance
+    return stop_loss_price
+
+#Position sizing:头寸规模
+def fixed_dollar_amount_position_size(account_equity, dollar_amount, asset_price):
+    position_size = dollar_amount / asset_price
+    return position_size
+
+def percentage_of_equity_position_size(account_equity, percentage, asset_price):
+    position_size = (account_equity * percentage) / asset_price
+    return position_size
+
+
+#Portfolio diversification: 投资组合多元化
+def calculate_portfolio_weights(asset_returns, risk_tolerance):
+    covariance_matrix = asset_returns.cov()
+    inverse_covariance_matrix = np.linalg.inv(covariance_matrix)
+    ones = np.ones(len(asset_returns.columns))
+    weights = np.dot(inverse_covariance_matrix, ones) / np.dot(np.dot(ones, inverse_covariance_matrix), ones)
+    return pd.Series(weights, index=asset_returns.columns)
+
+def rebalance_portfolio(current_holdings, target_allocations):
+    rebalance_orders = {}
+    total_value = sum(current_holdings.values())
+    for asset, current_value in current_holdings.items():
+        target_value = total_value * target_allocations[asset]
+        if current_value < target_value:
+            rebalance_orders[asset] = ("buy", target_value - current_value)
+        elif current_value > target_value:
+            rebalance_orders[asset] = ("sell", current_value - target_value)
+    return rebalance_orders
